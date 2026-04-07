@@ -1,38 +1,150 @@
-.App {
-  text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.sidebar-link {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  transition: 0.3s;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.sidebar-link .icon {
+  display: flex;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  color: white;
+  font-size: 14px;
+}
+
+/*  Bootstrap fix */
+.nav-link {
+  display: flex !important;
+  align-items: center;
+  gap: 12px;
+  color: white !important;
+}
+
+/* Hover */
+.sidebar-link:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateX(5px);
+}
+
+/* Active */
+.sidebar-link.active {
+  background: linear-gradient(90deg, #ff7e5f, #feb47b);
+  font-weight: bold;
+}
+
+
+/*  Background */
+.login-bg {
+  background: linear-gradient(135deg, #8492ce, #8464a3);
+}
+
+/*  Card */
+.login-card {
+  width: 380px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(15px);
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+/*  Input Wrapper */
+.input-group-custom {
+  position: relative;
+  margin-bottom: 15px;
 }
 
-@keyframes App-logo-spin {
+/*  Icon (FIXED POSITION) */
+.input-group-custom .input-icon {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  transform: translateY(-50%);
+  color: #666;
+  font-size: 16px;
+  pointer-events: none;
+  z-index: 2; 
+}
+
+/*  Input Field */
+.input-group-custom .input-field {
+  width: 150%;
+  height: 45px;
+  padding-left: 45px !important; /* space for icon */
+  border-radius: 10px;
+  border: none;
+  outline: none;
+}
+
+/*  Focus Fix (NO SHIFT) */
+.input-group-custom .input-field:focus {
+  outline: none;
+  box-shadow: none !important;
+}
+
+/*  Error Text */
+.input-group-custom small {
+  display: block;
+  margin-top: 5px;
+  font-size: 13px;
+}
+
+/*  Button */
+.btn-login {
+  background: linear-gradient(90deg, #00c9ff, #92fe9d);
+  border: none;
+  color: black;
+  font-weight: bold;
+  border-radius: 10px;
+  transition: 0.3s;
+  height: 45px;
+}
+
+.btn-login:hover {
+  transform: scale(1.05);
+}
+
+/*  Animation */
+.fade-in {
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+@keyframes fadeIn {
   from {
-    transform: rotate(0deg);
+    opacity: 0;
+    transform: translateY(15px);
   }
   to {
-    transform: rotate(360deg);
+    opacity: 1;
+    transform: translateY(0);
   }
+}
+
+/* navbar profile dropdown code  */
+.profile-dropdown {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  width: 150px;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  z-index: 1000;
+}
+
+.profile-dropdown .dropdown-item {
+  padding: 10px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.profile-dropdown .dropdown-item:hover {
+  background: #f1f1f1;
 }
