@@ -1,46 +1,51 @@
 import React, { useState } from "react";
-import { FaMoon, FaBell, FaUserCircle } from "react-icons/fa";
+import { FaMoon, FaBell, FaUserCircle, FaBars } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
-const Navbar = ({ toggleTheme, dark }) => {
+const Navbar = ({ toggleTheme, dark, toggleSidebar }) => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
   const handleLogout = () => {
-    localStorage.removeItem("auth");   // logout
-    navigate("/");                     // login page
+    localStorage.removeItem("auth");
+    navigate("/");
   };
 
   return (
     <nav
-      className="navbar px-5 py-3 d-flex justify-content-between shadow position-relative"
+      className="navbar px-3 px-md-5 py-3 d-flex justify-content-between shadow position-relative"
       style={{
         background: dark ? "#1f1f1f" : "#83cdf8",
         color: dark ? "white" : "black",
       }}
     >
-      <h4 className="fw-bold">CRM Dashboard</h4>
+      <div className="d-flex align-items-center gap-3">
+        {/* ☰ Mobile Menu */}
+        <FaBars
+          className="d-md-none"
+          size={22}
+          style={{ cursor: "pointer" }}
+          onClick={toggleSidebar}
+        />
+
+        <h5 className="fw-bold m-0">CRM Dashboard</h5>
+      </div>
 
       <div className="d-flex align-items-center gap-3 position-relative">
+        <FaMoon size={22} style={{ cursor: "pointer" }} onClick={toggleTheme} />
 
-        {/* Dark Mode */}
-        <FaMoon size={26} style={{ cursor: "pointer" }} onClick={toggleTheme} />
-
-        {/* Notification */}
         <FaBell
-        size={26}
+          size={22}
           style={{ cursor: "pointer" }}
           onClick={() => navigate("/notifications")}
         />
 
-        {/* Profile Icon */}
         <FaUserCircle
-          size={28}
+          size={26}
           style={{ cursor: "pointer" }}
           onClick={() => setOpen(!open)}
         />
 
-        {/* 🔽 Dropdown */}
         {open && (
           <div className="profile-dropdown shadow">
             <div
@@ -53,10 +58,7 @@ const Navbar = ({ toggleTheme, dark }) => {
               My Profile
             </div>
 
-            <div
-              className="dropdown-item text-danger"
-              onClick={handleLogout}
-            >
+            <div className="dropdown-item text-danger" onClick={handleLogout}>
               Logout
             </div>
           </div>

@@ -8,7 +8,6 @@ const Customers = () => {
   const [statusFilter, setStatusFilter] = useState("All");
   const [customers, setCustomers] = useState(customersData);
 
-  // Filter logic
   const filtered = customers.filter((c) => {
     return (
       c.name.toLowerCase().includes(search.toLowerCase()) &&
@@ -16,7 +15,6 @@ const Customers = () => {
     );
   });
 
-  // Add new customer
   const addCustomer = () => {
     const name = prompt("Enter Name");
     const email = prompt("Enter Email");
@@ -32,16 +30,18 @@ const Customers = () => {
 
   return (
     <Layout>
-      <div className="d-flex justify-content-between align-items-center mb-3">
+      
+      {/* Header */}
+      <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-3 gap-2">
         <h2 className="fw-bold">Customers</h2>
 
-        <button className="btn btn-primary" onClick={addCustomer}>
+        <button className="btn btn-primary w-100 w-md-auto" onClick={addCustomer}>
           + Add Customer
         </button>
       </div>
 
       {/* Search + Filter */}
-      <div className="d-flex gap-2 mb-3">
+      <div className="d-flex flex-column flex-md-row gap-2 mb-3">
         <input
           className="form-control"
           placeholder="Search customer..."
@@ -58,13 +58,17 @@ const Customers = () => {
         </select>
       </div>
 
-      {/* Table */}
+      {/* Responsive Table FIX */}
       <div className="card shadow-sm p-3">
-        <Table
-          columns={["Name", "Email", "Phone", "Status"]}
-          data={filtered}
-        />
-      </div>
+  <div className="table-responsive">
+    <Table
+      columns={["Name", "Email", "Phone", "Status"]}
+      data={filtered}
+    />
+  </div>
+</div>
+
+
     </Layout>
   );
 };

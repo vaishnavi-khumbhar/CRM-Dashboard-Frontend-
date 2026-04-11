@@ -148,3 +148,55 @@
 .profile-dropdown .dropdown-item:hover {
   background: #f1f1f1;
 }
+
+
+
+/* Sidebar default (desktop) */
+.sidebar {
+  transition: all 0.3s ease;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    left: -270px;
+    top: 0;
+    z-index: 1000;
+    height: 100%;
+  }
+
+  .sidebar.show {
+    left: 0;
+  }
+
+  /* Overlay */
+  .overlay {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    top: 0;
+    left: 0;
+    z-index: 999;
+  }
+}
+
+
+
+/* table content responsive code  */
+/* Table fix for mobile */
+table {
+  width: 100%;
+}
+
+th, td {
+  white-space: nowrap;   /* text एकाच line मध्ये */
+}
+
+@media (max-width: 768px) {
+  th, td {
+    font-size: 12px;
+    padding: 8px;
+  }
+}

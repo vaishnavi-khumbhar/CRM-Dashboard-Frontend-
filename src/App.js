@@ -20,7 +20,7 @@ const ProtectedRoute = ({ children }) => {
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/CRM-Dashboard-React">
       <Routes>
         {/* Public Route */}
         <Route path="/" element={<Login />} />

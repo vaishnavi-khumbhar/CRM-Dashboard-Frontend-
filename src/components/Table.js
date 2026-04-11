@@ -2,7 +2,7 @@ import React from "react";
 
 const Table = ({ columns, data }) => {
   return (
-    <table className="table table-striped">
+    <table className="table table-striped w-100">
       <thead className="table-dark">
         <tr>
           {columns.map((col, i) => (
