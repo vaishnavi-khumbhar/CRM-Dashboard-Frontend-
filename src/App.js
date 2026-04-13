@@ -24,8 +24,7 @@ const ProtectedRoute = ({ children }) => {
 
 function App() {
   return (
-    <BrowserRouter basename="/CRM-Dashboard-React">
-      {/* Toast */}
+<BrowserRouter basename="/CRM-Dashboard-Frontend-">      {/* Toast */}
       <ToastContainer
         position="top-right"
         autoClose={3000}
