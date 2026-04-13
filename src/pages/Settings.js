@@ -1,50 +1,98 @@
 import React, { useState, useEffect } from "react";
 import Layout from "../components/Layout";
+import { toast } from "react-toastify";
 
 const Settings = () => {
-  const [name, setName] = useState("Admin");
-  const [email, setEmail] = useState("admin@gmail.com");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [history, setHistory] = useState([]);
   const [showAll, setShowAll] = useState(false);
 
-  // Default login history
-  const defaultHistory = [
-    { email: "admin@gmail.com", time: "01 Apr 2026, 10:30 AM" },
-    { email: "user1@gmail.com", time: "02 Apr 2026, 12:15 PM" },
-    { email: "testuser@gmail.com", time: "03 Apr 2026, 09:45 AM" },
-    { email: "demo@gmail.com", time: "04 Apr 2026, 06:20 PM" },
-  ];
-
-  // Load History
+  //  LOAD DATA FROM BACKEND
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem("loginHistory"));
-
-    if (stored && stored.length > 0) {
-      setHistory(stored.reverse());
-    } else {
-      // If no data in localStorage → show default
-      setHistory(defaultHistory);
-      localStorage.setItem("loginHistory", JSON.stringify(defaultHistory));
-    }
+    fetchProfile();
+    fetchHistory();
   }, []);
 
-  const handleSave = () => {
-    alert("Settings Saved!");
+  //  GET PROFILE
+  const fetchProfile = async () => {
+    try {
+      const res = await fetch("http://localhost:8080/api/users/profile");
+      const data = await res.json();
+
+      if (data) {
+        setName(data.name || "");
+        setEmail(data.email || "");
+      }
+    } catch (error) {
+      console.error("Profile error:", error);
+    }
   };
 
-  // Delete single history
-  const deleteHistory = (index) => {
-    const updated = [...history];
-    updated.splice(index, 1);
-    setHistory(updated);
-    localStorage.setItem("loginHistory", JSON.stringify(updated.reverse()));
+  //  GET HISTORY
+  const fetchHistory = async () => {
+    try {
+      const res = await fetch("http://localhost:8080/api/users/history");
+      const data = await res.json();
+      setHistory(data);
+    } catch (error) {
+      console.error("History error:", error);
+    }
   };
 
-  // Delete all history
-  const deleteAllHistory = () => {
-    setHistory([]);
-    localStorage.removeItem("loginHistory");
+  //  SAVE SETTINGS (API)
+  const handleSave = async () => {
+    if (!name || !email) {
+      toast.warning("Name & Email required ⚠️");
+      return;
+    }
+
+    try {
+      await fetch("http://localhost:8080/api/users/update", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+        }),
+      });
+
+      toast.success("Settings Saved Successfully ✅");
+    } catch (error) {
+      toast.error("Error saving settings ❌");
+    }
+  };
+
+  //  DELETE SINGLE HISTORY
+  const deleteHistory = async (id) => {
+    try {
+      await fetch(`http://localhost:8080/api/users/history/${id}`, {
+        method: "DELETE",
+      });
+
+      fetchHistory(); // refresh
+      toast.success("History deleted 🗑️");
+    } catch (error) {
+      toast.error("Error deleting ❌");
+    }
+  };
+
+  //  DELETE ALL HISTORY
+  const deleteAllHistory = async () => {
+    try {
+      await fetch("http://localhost:8080/api/users/history", {
+        method: "DELETE",
+      });
+
+      setHistory([]);
+      toast.success("All history cleared 🧹");
+    } catch (error) {
+      toast.error("Error ❌");
+    }
   };
 
   return (
@@ -125,14 +173,14 @@ const Settings = () => {
               </tr>
             </thead>
             <tbody>
-              {(showAll ? history : history.slice(0, 3)).map((item, index) => (
-                <tr key={index}>
+              {(showAll ? history : history.slice(0, 3)).map((item) => (
+                <tr key={item.id}>
                   <td>{item.email}</td>
                   <td>{item.time}</td>
                   <td>
                     <button
                       className="btn btn-sm btn-danger"
-                      onClick={() => deleteHistory(index)}
+                      onClick={() => deleteHistory(item.id)}
                     >
                       Delete
                     </button>
@@ -144,7 +192,7 @@ const Settings = () => {
         )}
       </div>
 
-      {/* Save */}
+      {/* SAVE */}
       <div className="mt-4">
         <button className="btn btn-primary px-4" onClick={handleSave}>
           Save Changes

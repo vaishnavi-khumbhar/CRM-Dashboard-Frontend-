@@ -2,6 +2,7 @@ import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import Customers from "./pages/Customers";
 import CustomerDetails from "./pages/CustomerDetails";
@@ -12,7 +13,10 @@ import Reports from "./pages/Reports";
 import Notifications from "./pages/Notifications";
 import Settings from "./pages/Settings";
 
-// ProtectedRoute component
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+// ✅ Protected Route
 const ProtectedRoute = ({ children }) => {
   const isLoggedIn = localStorage.getItem("isLoggedIn");
   return isLoggedIn ? children : <Navigate to="/" />;
@@ -21,11 +25,20 @@ const ProtectedRoute = ({ children }) => {
 function App() {
   return (
     <BrowserRouter basename="/CRM-Dashboard-React">
-      <Routes>
-        {/* Public Route */}
-        <Route path="/" element={<Login />} />
+      {/* Toast */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        theme="colored"
+      />
 
-        {/* Protected Routes */}
+      <Routes>
+
+        {/*  PUBLIC ROUTES */}
+        <Route path="/" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+
+        {/*  PROTECTED ROUTES */}
         <Route
           path="/dashboard"
           element={
@@ -34,6 +47,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/customers"
           element={
@@ -42,6 +56,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/customer-details"
           element={
@@ -50,6 +65,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/leads"
           element={
@@ -58,6 +74,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/sales"
           element={
@@ -66,6 +83,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/tasks"
           element={
@@ -74,6 +92,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/reports"
           element={
@@ -82,6 +101,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/notifications"
           element={
@@ -90,6 +110,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/settings"
           element={
@@ -99,8 +120,9 @@ function App() {
           }
         />
 
-        {/* Catch-all redirect */}
+        {/*  CATCH ALL */}
         <Route path="*" element={<Navigate to="/" />} />
+
       </Routes>
     </BrowserRouter>
   );

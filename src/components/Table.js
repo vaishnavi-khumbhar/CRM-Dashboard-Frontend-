@@ -1,6 +1,6 @@
 import React from "react";
 
-const Table = ({ columns, data }) => {
+const Table = ({ columns, data, onDelete }) => {
   return (
     <table className="table table-striped w-100">
       <thead className="table-dark">
@@ -12,11 +12,23 @@ const Table = ({ columns, data }) => {
       </thead>
 
       <tbody>
-        {data.map((row, index) => (
-          <tr key={index}>
-            {columns.map((col, i) => (
-              <td key={i}>{row[col.toLowerCase()]}</td>
-            ))}
+        {data.map((row) => (
+          <tr key={row.id}>
+            {columns.map((col, i) => {
+              if (col === "Action") {
+                return (
+                  <td key={i}>
+                    <button
+                      className="btn btn-danger btn-sm"
+                      onClick={() => onDelete(row.id)}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                );
+              }
+              return <td key={i}>{row[col.toLowerCase()]}</td>;
+            })}
           </tr>
         ))}
       </tbody>

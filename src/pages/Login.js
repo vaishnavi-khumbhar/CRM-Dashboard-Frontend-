@@ -9,46 +9,46 @@ const Login = () => {
 
   const navigate = useNavigate();
 
-  const isStrongPassword = (pass) => {
-    const regex =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    return regex.test(pass);
-  };
-
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
+    // ✅ Validation
     if (!email || !password) {
-      Swal.fire({
-        icon: "error",
-        title: "Oops...",
-        text: "Please fill all fields",
-      });
+      Swal.fire("Error", "Please fill all fields", "error");
       return;
     }
 
-    if (!isStrongPassword(password)) {
-      Swal.fire({
-        icon: "warning",
-        title: "Weak Password",
-        html:
-          "Password must be at least 8 characters long and include:<br/>" +
-          "- 1 uppercase letter<br/>" +
-          "- 1 lowercase letter<br/>" +
-          "- 1 number<br/>" +
-          "- 1 special character",
+    try {
+      const res = await fetch("http://localhost:8080/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email.trim().toLowerCase(),   // 🔥 FIX (important)
+          password: password.trim(),
+        }),
       });
-      return;
-    }
 
-    localStorage.setItem("isLoggedIn", true);
-    Swal.fire({
-      icon: "success",
-      title: "Login Successful",
-      text: `Welcome ${email}!`,
-      timer: 1500,
-      showConfirmButton: false,
-    }).then(() => navigate("/dashboard"));
+      const data = await res.text();
+
+      if (data === "Login Successful") {
+        localStorage.setItem("isLoggedIn", true);
+        localStorage.setItem("email", email.trim().toLowerCase());
+
+        Swal.fire({
+          icon: "success",
+          title: "Login Successful",
+          text: `Welcome ${email}!`,
+          timer: 1500,
+          showConfirmButton: false,
+        }).then(() => navigate("/dashboard"));
+      } else {
+        Swal.fire("Error", "Invalid email or password", "error");
+      }
+    } catch (error) {
+      Swal.fire("Error", "Backend not running ❌", "error");
+    }
   };
 
   return (
@@ -63,7 +63,7 @@ const Login = () => {
       >
         <h3 className="text-center mb-4 fw-bold">CRM Login</h3>
 
-        {/* Email input */}
+        {/* Email */}
         <div className="input-group mb-3">
           <span className="input-group-text bg-white">
             <FaEnvelope />
@@ -77,7 +77,7 @@ const Login = () => {
           />
         </div>
 
-        {/* Password input */}
+        {/* Password */}
         <div className="input-group mb-4">
           <span className="input-group-text bg-white">
             <FaLock />
@@ -92,29 +92,22 @@ const Login = () => {
         </div>
 
         <button className="btn btn-primary w-100 fw-bold">Login</button>
+
+        {/* Signup */}
+        <p className="text-center mt-3">
+          Don't have an account?{" "}
+          <span
+            onClick={() => navigate("/signup")}
+            style={{
+              cursor: "pointer",
+              color: "#667eea",
+              fontWeight: "bold",
+            }}
+          >
+            Signup
+          </span>
+        </p>
       </form>
-
-      <style>
-        {`
-          @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-          }
-
-          input:focus {
-            box-shadow: none !important;
-            border-color: #667eea !important;
-          }
-
-          .input-group-text {
-            border-right: none;
-          }
-
-          .form-control {
-            border-left: none;
-          }
-        `}
-      </style>
     </div>
   );
 };
