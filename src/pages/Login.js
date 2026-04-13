@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { FaEnvelope, FaLock } from "react-icons/fa";
+import { API_BASE_URL } from "../config/api";
+
+
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -19,13 +22,13 @@ const Login = () => {
     }
 
     try {
-      const res = await fetch("http://localhost:8080/api/auth/login", {
+      const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email: email.trim().toLowerCase(),   // 🔥 FIX (important)
+          email: email.trim().toLowerCase(),
           password: password.trim(),
         }),
       });
@@ -33,7 +36,7 @@ const Login = () => {
       const data = await res.text();
 
       if (data === "Login Successful") {
-        localStorage.setItem("isLoggedIn", true);
+        localStorage.setItem("isLoggedIn", "true");
         localStorage.setItem("email", email.trim().toLowerCase());
 
         Swal.fire({
@@ -47,7 +50,8 @@ const Login = () => {
         Swal.fire("Error", "Invalid email or password", "error");
       }
     } catch (error) {
-      Swal.fire("Error", "Backend not running ❌", "error");
+      console.error(error);
+      Swal.fire("Error", "Backend not reachable ❌", "error");
     }
   };
 
@@ -59,7 +63,7 @@ const Login = () => {
       <form
         onSubmit={handleLogin}
         className="p-5 bg-white rounded shadow-lg"
-        style={{ width: "350px", animation: "fadeIn 0.8s ease-in-out" }}
+        style={{ width: "350px" }}
       >
         <h3 className="text-center mb-4 fw-bold">CRM Login</h3>
 

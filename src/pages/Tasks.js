@@ -1,47 +1,56 @@
 import React, { useState, useEffect, useRef } from "react";
 import Layout from "../components/Layout";
 import { toast } from "react-toastify";
+import { API_BASE_URL } from "../config/api";
+
+
 
 const Tasks = () => {
   const [tasks, setTasks] = useState([]);
 
-  const hasFetched = useRef(false); // prevent double API call
+  const hasFetched = useRef(false);
 
   const [form, setForm] = useState({
     title: "",
     description: "",
-    priority: "Medium"
+    priority: "Medium",
   });
 
-  //  FETCH FROM BACKEND
+  // 📥 FETCH TASKS
   useEffect(() => {
-    if (hasFetched.current) return;
-    hasFetched.current = true;
+    const fetchTasks = async () => {
+      if (hasFetched.current) return;
+      hasFetched.current = true;
 
-    fetch("http://localhost:8080/api/tasks")
-      .then(res => res.json())
-      .then(data => {
-        setTasks(data);
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/tasks`);
+
+        if (!res.ok) throw new Error("API Error");
+
+        const data = await res.json();
+        setTasks(data || []);
 
         toast.success("Tasks loaded successfully ✅", {
           toastId: "tasks-load",
         });
-      })
-      .catch(err => {
-        console.log(err);
+      } catch (err) {
+        console.error(err);
 
         toast.error("Failed to load tasks ❌", {
           toastId: "tasks-error",
         });
-      });
+      }
+    };
+
+    fetchTasks();
   }, []);
 
-  //  HANDLE INPUT
+  // ✍️ INPUT
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  //  ADD TASK
+  // ➕ ADD TASK
   const addTask = async (e) => {
     e.preventDefault();
 
@@ -54,20 +63,23 @@ const Tasks = () => {
 
     const newTask = {
       ...form,
-      status: "Pending"
+      status: "Pending",
     };
 
     try {
-      const res = await fetch("http://localhost:8080/api/tasks", {
+      const res = await fetch(`${API_BASE_URL}/api/tasks`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(newTask)
+        body: JSON.stringify(newTask),
       });
 
+      if (!res.ok) throw new Error("Add failed");
+
       const data = await res.json();
-      setTasks([...tasks, data]);
+
+      setTasks((prev) => [...prev, data]);
 
       toast.success("Task added successfully 📝", {
         toastId: "task-add",
@@ -76,9 +88,8 @@ const Tasks = () => {
       setForm({
         title: "",
         description: "",
-        priority: "Medium"
+        priority: "Medium",
       });
-
     } catch (error) {
       console.error(error);
 
@@ -88,29 +99,37 @@ const Tasks = () => {
     }
   };
 
-  //  TOGGLE DONE
+  // 🔄 TOGGLE TASK
   const toggle = async (task) => {
     const updated = {
       ...task,
-      status: task.status === "Done" ? "Pending" : "Done"
+      status: task.status === "Done" ? "Pending" : "Done",
     };
 
     try {
-      await fetch(`http://localhost:8080/api/tasks/${task.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updated)
-      });
-
-      setTasks(tasks.map(t => t.id === task.id ? updated : t));
-
-      toast.success(
-        task.status === "Done"
-          ? "Task marked as Pending 🔄"
-          : "Task marked as Done ✅",
-        { toastId: "task-toggle" }
+      const res = await fetch(
+        `${API_BASE_URL}/api/tasks/${task.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updated),
+        }
       );
 
+      if (!res.ok) throw new Error("Update failed");
+
+      setTasks((prev) =>
+        prev.map((t) => (t.id === task.id ? updated : t))
+      );
+
+      toast.success(
+        updated.status === "Done"
+          ? "Task marked as Done ✅"
+          : "Task marked as Pending 🔄",
+        { toastId: "task-toggle" }
+      );
     } catch (error) {
       console.error(error);
 
@@ -120,19 +139,23 @@ const Tasks = () => {
     }
   };
 
-  //  DELETE TASK
+  // 🗑 DELETE TASK
   const deleteTask = async (id) => {
     try {
-      await fetch(`http://localhost:8080/api/tasks/${id}`, {
-        method: "DELETE"
-      });
+      const res = await fetch(
+        `${API_BASE_URL}/api/tasks/${id}`,
+        {
+          method: "DELETE",
+        }
+      );
 
-      setTasks(tasks.filter(t => t.id !== id));
+      if (!res.ok) throw new Error("Delete failed");
+
+      setTasks((prev) => prev.filter((t) => t.id !== id));
 
       toast.success("Task deleted successfully 🗑️", {
         toastId: "task-delete",
       });
-
     } catch (error) {
       console.error(error);
 
@@ -142,7 +165,7 @@ const Tasks = () => {
     }
   };
 
-  //  PRIORITY COLOR
+  // 🎨 PRIORITY COLOR
   const getPriorityColor = (p) => {
     if (p === "High") return "bg-danger";
     if (p === "Medium") return "bg-warning text-dark";
@@ -153,10 +176,9 @@ const Tasks = () => {
     <Layout>
       <h2 className="fw-bold mb-4">Task Manager</h2>
 
-      {/*  FORM */}
+      {/* FORM */}
       <div className="card shadow p-3 mb-4">
         <form className="d-flex gap-2" onSubmit={addTask}>
-          
           <input
             className="form-control"
             name="title"
@@ -184,13 +206,11 @@ const Tasks = () => {
             <option>Low</option>
           </select>
 
-          <button className="btn btn-primary">
-            Add
-          </button>
+          <button className="btn btn-primary">Add</button>
         </form>
       </div>
 
-      {/*  TASK LIST */}
+      {/* LIST */}
       <ul className="list-group">
         {tasks.map((t) => (
           <li
@@ -200,9 +220,12 @@ const Tasks = () => {
             }`}
           >
             <div>
-              <strong>{t.title}</strong><br />
+              <strong>{t.title}</strong>
+              <br />
               <small>{t.description}</small>{" "}
-              <span className={`badge ms-2 ${getPriorityColor(t.priority)}`}>
+              <span
+                className={`badge ms-2 ${getPriorityColor(t.priority)}`}
+              >
                 {t.priority}
               </span>
             </div>

@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
 import Layout from "../components/Layout";
 import { toast } from "react-toastify";
+import { API_BASE_URL } from "../config/api";
+
+
 
 const Leads = () => {
   const [leads, setLeads] = useState([]);
 
-  const hasFetched = useRef(false); 
+  const hasFetched = useRef(false);
 
-  //  Form State
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -15,35 +17,41 @@ const Leads = () => {
     status: "New",
   });
 
-  //  FETCH FROM BACKEND
+  // 📥 FETCH LEADS
   useEffect(() => {
-    if (hasFetched.current) return;
-    hasFetched.current = true;
+    const fetchLeads = async () => {
+      if (hasFetched.current) return;
+      hasFetched.current = true;
 
-    fetch("http://localhost:8080/api/leads")
-      .then((res) => res.json())
-      .then((data) => {
-        setLeads(data);
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/leads`);
+
+        if (!res.ok) throw new Error("API Error");
+
+        const data = await res.json();
+        setLeads(data || []);
 
         toast.success("Leads loaded successfully ✅", {
           toastId: "leads-load",
         });
-      })
-      .catch((err) => {
-        console.log(err);
+      } catch (err) {
+        console.error(err);
 
         toast.error("Failed to load leads ❌", {
           toastId: "leads-error",
         });
-      });
+      }
+    };
+
+    fetchLeads();
   }, []);
 
-  //  HANDLE INPUT CHANGE
+  // ✍️ INPUT CHANGE
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  //  ADD NEW LEAD
+  // ➕ ADD LEAD
   const addLead = async (e) => {
     e.preventDefault();
 
@@ -57,7 +65,7 @@ const Leads = () => {
     }
 
     try {
-      const res = await fetch("http://localhost:8080/api/leads", {
+      const res = await fetch(`${API_BASE_URL}/api/leads`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -65,15 +73,16 @@ const Leads = () => {
         body: JSON.stringify(form),
       });
 
+      if (!res.ok) throw new Error("Add failed");
+
       const newLead = await res.json();
 
-      setLeads([...leads, newLead]);
+      setLeads((prev) => [...prev, newLead]);
 
       toast.success("Lead added successfully 🎉", {
         toastId: "lead-add",
       });
 
-      // Reset form
       setForm({
         name: "",
         email: "",
@@ -89,12 +98,12 @@ const Leads = () => {
     }
   };
 
-  // CONVERT LEAD
+  // 🔁 CONVERT LEAD
   const convertLead = async (lead) => {
     const updatedLead = { ...lead, status: "Converted" };
 
     try {
-      await fetch(`http://localhost:8080/api/leads/${lead.id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/leads/${lead.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -102,8 +111,10 @@ const Leads = () => {
         body: JSON.stringify(updatedLead),
       });
 
-      setLeads(
-        leads.map((l) => (l.id === lead.id ? updatedLead : l))
+      if (!res.ok) throw new Error("Convert failed");
+
+      setLeads((prev) =>
+        prev.map((l) => (l.id === lead.id ? updatedLead : l))
       );
 
       toast.success("Lead converted to customer 🎯", {
@@ -118,14 +129,16 @@ const Leads = () => {
     }
   };
 
-  //  DELETE LEAD
+  // 🗑 DELETE LEAD
   const deleteLead = async (id) => {
     try {
-      await fetch(`http://localhost:8080/api/leads/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/leads/${id}`, {
         method: "DELETE",
       });
 
-      setLeads(leads.filter((l) => l.id !== id));
+      if (!res.ok) throw new Error("Delete failed");
+
+      setLeads((prev) => prev.filter((l) => l.id !== id));
 
       toast.success("Lead deleted successfully 🗑️", {
         toastId: "lead-delete",
@@ -139,7 +152,7 @@ const Leads = () => {
     }
   };
 
-  // Badge color
+  // 🎨 Badge
   const getBadge = (status) => {
     if (status === "New") return "bg-primary";
     if (status === "Contacted") return "bg-warning text-dark";
@@ -150,7 +163,7 @@ const Leads = () => {
     <Layout>
       <h2 className="fw-bold mb-4">Leads Management</h2>
 
-      {/*  ADD LEAD FORM */}
+      {/* FORM */}
       <div className="card shadow p-3 mb-4">
         <h5 className="mb-3">Add New Lead</h5>
 
@@ -163,7 +176,6 @@ const Leads = () => {
               onChange={handleChange}
               className="form-control"
               placeholder="Name"
-              required
             />
           </div>
 
@@ -175,7 +187,6 @@ const Leads = () => {
               onChange={handleChange}
               className="form-control"
               placeholder="Email"
-              required
             />
           </div>
 
@@ -187,7 +198,6 @@ const Leads = () => {
               onChange={handleChange}
               className="form-control"
               placeholder="Phone"
-              required
             />
           </div>
 
@@ -211,7 +221,7 @@ const Leads = () => {
         </form>
       </div>
 
-      {/*  TABLE */}
+      {/* TABLE */}
       <div className="card shadow p-3">
         <table className="table align-middle">
           <thead className="table-dark">

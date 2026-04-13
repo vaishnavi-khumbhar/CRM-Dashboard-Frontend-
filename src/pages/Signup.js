@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { FaUser, FaEnvelope, FaLock } from "react-icons/fa";
+import { API_BASE_URL } from "../config/api";
+
+
 
 const Signup = () => {
   const [name, setName] = useState("");
@@ -19,26 +22,29 @@ const Signup = () => {
     }
 
     try {
-      const res = await fetch("http://localhost:8080/api/auth/signup", {
+      const res = await fetch(`${API_BASE_URL}/api/auth/signup`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.trim().toLowerCase(),
+          password: password.trim(),
+        }),
       });
 
-      if (res.ok) {
-        Swal.fire({
-          icon: "success",
-          title: "Account Created",
-          text: "Signup successful ✅",
-          timer: 1500,
-          showConfirmButton: false,
-        }).then(() => navigate("/"));
-      } else {
-        Swal.fire("Error", "Signup failed ❌", "error");
-      }
+      if (!res.ok) throw new Error("Signup failed");
+
+      Swal.fire({
+        icon: "success",
+        title: "Account Created",
+        text: "Signup successful ✅",
+        timer: 1500,
+        showConfirmButton: false,
+      }).then(() => navigate("/"));
     } catch (error) {
+      console.error(error);
       Swal.fire("Error", "Server error ❌", "error");
     }
   };
@@ -51,7 +57,7 @@ const Signup = () => {
       <form
         onSubmit={handleSignup}
         className="p-5 bg-white rounded shadow-lg"
-        style={{ width: "350px", animation: "fadeIn 0.8s ease-in-out" }}
+        style={{ width: "350px" }}
       >
         <h3 className="text-center mb-4 fw-bold">Create Account</h3>
 
@@ -101,40 +107,21 @@ const Signup = () => {
           Signup
         </button>
 
-        {/* 🔥 LOGIN LINK */}
+        {/* Login Link */}
         <p className="text-center mt-3">
           Already have an account?{" "}
           <span
             onClick={() => navigate("/")}
-            style={{ cursor: "pointer", color: "#667eea", fontWeight: "bold" }}
+            style={{
+              cursor: "pointer",
+              color: "#667eea",
+              fontWeight: "bold",
+            }}
           >
             Login
           </span>
         </p>
       </form>
-
-      {/* Animation + Input Style */}
-      <style>
-        {`
-          @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-          }
-
-          input:focus {
-            box-shadow: none !important;
-            border-color: #667eea !important;
-          }
-
-          .input-group-text {
-            border-right: none;
-          }
-
-          .form-control {
-            border-left: none;
-          }
-        `}
-      </style>
     </div>
   );
 };

@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import Layout from "../components/Layout";
 import { toast } from "react-toastify";
+import { API_BASE_URL } from "../config/api";
+
+
 
 const Settings = () => {
   const [name, setName] = useState("");
@@ -9,39 +12,45 @@ const Settings = () => {
   const [history, setHistory] = useState([]);
   const [showAll, setShowAll] = useState(false);
 
-  //  LOAD DATA FROM BACKEND
+  // 🚀 LOAD ALL DATA
   useEffect(() => {
     fetchProfile();
     fetchHistory();
   }, []);
 
-  //  GET PROFILE
+  // 👤 PROFILE
   const fetchProfile = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/users/profile");
+      const res = await fetch(`${API_BASE_URL}/api/users/profile`);
+
+      if (!res.ok) throw new Error("Profile error");
+
       const data = await res.json();
 
-      if (data) {
-        setName(data.name || "");
-        setEmail(data.email || "");
-      }
+      setName(data?.name || "");
+      setEmail(data?.email || "");
     } catch (error) {
       console.error("Profile error:", error);
+      toast.error("Failed to load profile ❌");
     }
   };
 
-  //  GET HISTORY
+  // 📜 HISTORY
   const fetchHistory = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/users/history");
+      const res = await fetch(`${API_BASE_URL}/api/users/history`);
+
+      if (!res.ok) throw new Error("History error");
+
       const data = await res.json();
-      setHistory(data);
+      setHistory(data || []);
     } catch (error) {
       console.error("History error:", error);
+      toast.error("Failed to load history ❌");
     }
   };
 
-  //  SAVE SETTINGS (API)
+  // 💾 SAVE SETTINGS
   const handleSave = async () => {
     if (!name || !email) {
       toast.warning("Name & Email required ⚠️");
@@ -49,7 +58,7 @@ const Settings = () => {
     }
 
     try {
-      await fetch("http://localhost:8080/api/users/update", {
+      const res = await fetch(`${API_BASE_URL}/api/users/update`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -61,36 +70,49 @@ const Settings = () => {
         }),
       });
 
+      if (!res.ok) throw new Error("Save failed");
+
       toast.success("Settings Saved Successfully ✅");
     } catch (error) {
+      console.error(error);
       toast.error("Error saving settings ❌");
     }
   };
 
-  //  DELETE SINGLE HISTORY
+  // 🗑 DELETE SINGLE HISTORY
   const deleteHistory = async (id) => {
     try {
-      await fetch(`http://localhost:8080/api/users/history/${id}`, {
-        method: "DELETE",
-      });
+      const res = await fetch(
+        `${API_BASE_URL}/api/users/history/${id}`,
+        {
+          method: "DELETE",
+        }
+      );
 
-      fetchHistory(); // refresh
+      if (!res.ok) throw new Error("Delete failed");
+
+      setHistory((prev) => prev.filter((item) => item.id !== id));
+
       toast.success("History deleted 🗑️");
     } catch (error) {
+      console.error(error);
       toast.error("Error deleting ❌");
     }
   };
 
-  //  DELETE ALL HISTORY
+  // 🧹 DELETE ALL HISTORY
   const deleteAllHistory = async () => {
     try {
-      await fetch("http://localhost:8080/api/users/history", {
+      const res = await fetch(`${API_BASE_URL}/api/users/history`, {
         method: "DELETE",
       });
+
+      if (!res.ok) throw new Error("Delete all failed");
 
       setHistory([]);
       toast.success("All history cleared 🧹");
     } catch (error) {
+      console.error(error);
       toast.error("Error ❌");
     }
   };
@@ -100,7 +122,6 @@ const Settings = () => {
       <h2 className="fw-bold mb-4">Settings</h2>
 
       <div className="row g-4">
-
         {/* Profile */}
         <div className="col-md-6">
           <div className="card shadow p-4">
@@ -136,10 +157,9 @@ const Settings = () => {
             />
           </div>
         </div>
-
       </div>
 
-      {/* LOGIN HISTORY */}
+      {/* HISTORY */}
       <div className="card shadow p-4 mt-4">
         <div className="d-flex justify-content-between align-items-center mb-3">
           <h5 className="fw-bold">Login History</h5>
@@ -172,6 +192,7 @@ const Settings = () => {
                 <th>Action</th>
               </tr>
             </thead>
+
             <tbody>
               {(showAll ? history : history.slice(0, 3)).map((item) => (
                 <tr key={item.id}>

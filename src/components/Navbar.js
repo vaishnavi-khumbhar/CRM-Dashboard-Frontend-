@@ -1,17 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { FaMoon, FaBell, FaUserCircle, FaBars } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../config/api";
+
+
 
 const Navbar = ({ toggleTheme, dark, toggleSidebar }) => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
+  // 🔔 Fetch unread notifications
   const fetchUnreadCount = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/notifications/unread");
+      const res = await fetch(`${API_BASE_URL}/api/notifications/unread`);
       const data = await res.json();
-      setUnreadCount(data.length);
+      setUnreadCount(data.length || 0);
     } catch (error) {
       console.error("Error fetching unread count:", error);
     }
@@ -27,17 +31,15 @@ const Navbar = ({ toggleTheme, dark, toggleSidebar }) => {
     return () => clearInterval(interval);
   }, []);
 
-  // ✅ UPDATED LOGOUT FUNCTION 🔥
+  // 🚪 Logout
   const handleLogout = async () => {
     try {
       const email = localStorage.getItem("email");
 
-      // 🔥 CALL BACKEND LOGOUT API
-      await fetch(`http://localhost:8080/api/auth/logout?email=${email}`, {
+      await fetch(`${API_BASE_URL}/api/auth/logout?email=${email}`, {
         method: "POST",
       });
 
-      // ✅ clear storage
       localStorage.removeItem("auth");
       localStorage.removeItem("isLoggedIn");
       localStorage.removeItem("email");
@@ -56,6 +58,7 @@ const Navbar = ({ toggleTheme, dark, toggleSidebar }) => {
         color: dark ? "white" : "black",
       }}
     >
+      {/* Left Side */}
       <div className="d-flex align-items-center gap-3">
         <FaBars
           className="d-md-none"
@@ -63,14 +66,14 @@ const Navbar = ({ toggleTheme, dark, toggleSidebar }) => {
           style={{ cursor: "pointer" }}
           onClick={toggleSidebar}
         />
-
         <h5 className="fw-bold m-0">CRM Dashboard</h5>
       </div>
 
+      {/* Right Side */}
       <div className="d-flex align-items-center gap-3 position-relative">
         <FaMoon size={22} style={{ cursor: "pointer" }} onClick={toggleTheme} />
 
-        {/* 🔔 Notification */}
+        {/* Notification */}
         <div style={{ position: "relative", cursor: "pointer" }}>
           <FaBell size={22} onClick={() => navigate("/notifications")} />
 
@@ -89,7 +92,7 @@ const Navbar = ({ toggleTheme, dark, toggleSidebar }) => {
           )}
         </div>
 
-        {/* 👤 Profile */}
+        {/* Profile */}
         <FaUserCircle
           size={26}
           style={{ cursor: "pointer" }}
@@ -108,7 +111,6 @@ const Navbar = ({ toggleTheme, dark, toggleSidebar }) => {
               My Profile
             </div>
 
-            {/* ✅ LOGOUT BUTTON */}
             <div className="dropdown-item text-danger" onClick={handleLogout}>
               Logout
             </div>

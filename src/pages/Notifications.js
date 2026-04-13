@@ -1,24 +1,28 @@
 import React, { useEffect, useState, useRef } from "react";
 import Layout from "../components/Layout";
 import { toast } from "react-toastify";
+import { API_BASE_URL } from "../config/api";
+
+
 
 const Notifications = () => {
   const [notifications, setNotifications] = useState([]);
 
-  const hasFetched = useRef(false); //  prevent double API call
+  const hasFetched = useRef(false);
 
-  //  FETCH FROM BACKEND
+  // 📥 FETCH NOTIFICATIONS
   const fetchNotifications = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/notifications");
-      const data = await res.json();
+      const res = await fetch(`${API_BASE_URL}/api/notifications`);
 
-      setNotifications(data);
+      if (!res.ok) throw new Error("API Error");
+
+      const data = await res.json();
+      setNotifications(data || []);
 
       toast.success("Notifications loaded 🔔", {
         toastId: "notifications-load",
       });
-
     } catch (error) {
       console.error("Error fetching notifications:", error);
 
@@ -35,16 +39,21 @@ const Notifications = () => {
     fetchNotifications();
   }, []);
 
-  //  MARK AS READ
+  // ✅ MARK AS READ
   const markAsRead = async (id) => {
     try {
-      await fetch(`http://localhost:8080/api/notifications/${id}`, {
-        method: "PUT",
-      });
+      const res = await fetch(
+        `${API_BASE_URL}/api/notifications/${id}`,
+        {
+          method: "PUT",
+        }
+      );
 
-      // update UI without refetch (faster)
-      setNotifications(
-        notifications.map((n) =>
+      if (!res.ok) throw new Error("Update failed");
+
+      // update UI instantly (no refetch)
+      setNotifications((prev) =>
+        prev.map((n) =>
           n.id === id ? { ...n, readStatus: true } : n
         )
       );
@@ -52,7 +61,6 @@ const Notifications = () => {
       toast.success("Marked as read ✅", {
         toastId: "notification-read",
       });
-
     } catch (error) {
       console.error("Error updating notification:", error);
 

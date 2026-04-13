@@ -1,56 +1,64 @@
 import React, { useState, useEffect, useRef } from "react";
 import Layout from "../components/Layout";
 import { toast } from "react-toastify";
+import { API_BASE_URL } from "../config/api";
+
+
 
 const Sales = () => {
   const [sales, setSales] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState("");
 
-  const hasFetched = useRef(false); // 🔥 prevent double API call
+  const hasFetched = useRef(false);
 
-  // ✅ FORM STATE
   const [form, setForm] = useState({
     product: "",
     amount: "",
     date: "",
-    customerId: ""
+    customerId: "",
   });
 
-  // ✅ FETCH FROM BACKEND
+  // 📥 FETCH SALES
   useEffect(() => {
-    if (hasFetched.current) return;
-    hasFetched.current = true;
+    const fetchSales = async () => {
+      if (hasFetched.current) return;
+      hasFetched.current = true;
 
-    fetch("http://localhost:8080/api/sales")
-      .then((res) => res.json())
-      .then((data) => {
-        setSales(data);
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/sales`);
+
+        if (!res.ok) throw new Error("API Error");
+
+        const data = await res.json();
+        setSales(data || []);
 
         toast.success("Sales loaded successfully ✅", {
           toastId: "sales-load",
         });
-      })
-      .catch((err) => {
-        console.log(err);
+      } catch (err) {
+        console.error(err);
 
         toast.error("Failed to load sales ❌", {
           toastId: "sales-error",
         });
-      });
+      }
+    };
+
+    fetchSales();
   }, []);
 
-  // ✅ FILTER
+  // 🔍 FILTER
   const filteredSales = sales.filter((s) => {
     if (!selectedMonth) return true;
     return s.date?.split("-")[1] === selectedMonth;
   });
 
-  // ✅ HANDLE INPUT
+  // ✍️ HANDLE INPUT
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // ✅ ADD SALE
+  // ➕ ADD SALE
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -64,32 +72,33 @@ const Sales = () => {
     }
 
     try {
-      const res = await fetch("http://localhost:8080/api/sales", {
+      const res = await fetch(`${API_BASE_URL}/api/sales`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           ...form,
-          amount: parseFloat(form.amount),
+          amount: parseFloat(amount),
         }),
       });
 
+      if (!res.ok) throw new Error("Add failed");
+
       const data = await res.json();
-      setSales([...sales, data]);
+
+      setSales((prev) => [...prev, data]);
 
       toast.success("Sale added successfully 💰", {
         toastId: "sales-add",
       });
 
-      // reset form
       setForm({
         product: "",
         amount: "",
         date: "",
-        customerId: ""
+        customerId: "",
       });
-
     } catch (error) {
       console.error(error);
 
@@ -99,14 +108,16 @@ const Sales = () => {
     }
   };
 
-  // ✅ DELETE SALE
+  // 🗑 DELETE SALE
   const deleteSale = async (id) => {
     try {
-      await fetch(`http://localhost:8080/api/sales/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/sales/${id}`, {
         method: "DELETE",
       });
 
-      setSales(sales.filter((s) => s.id !== id));
+      if (!res.ok) throw new Error("Delete failed");
+
+      setSales((prev) => prev.filter((s) => s.id !== id));
 
       toast.success("Sale deleted successfully 🗑️", {
         toastId: "sales-delete",
@@ -124,7 +135,7 @@ const Sales = () => {
     <Layout>
       <h2 className="fw-bold mb-4">Sales Records</h2>
 
-      {/* 🔥 ADD SALE FORM */}
+      {/* FORM */}
       <div className="card shadow p-3 mb-4">
         <h5>Add Sale</h5>
 
@@ -136,7 +147,6 @@ const Sales = () => {
               placeholder="Product"
               value={form.product}
               onChange={handleChange}
-              required
             />
           </div>
 
@@ -147,7 +157,6 @@ const Sales = () => {
               placeholder="Amount"
               value={form.amount}
               onChange={handleChange}
-              required
             />
           </div>
 
@@ -158,7 +167,6 @@ const Sales = () => {
               name="date"
               value={form.date}
               onChange={handleChange}
-              required
             />
           </div>
 
@@ -180,7 +188,7 @@ const Sales = () => {
         </form>
       </div>
 
-      {/* 🔍 FILTER */}
+      {/* FILTER */}
       <div className="mb-3 d-flex gap-2">
         <select
           className="form-select w-25"
@@ -194,7 +202,7 @@ const Sales = () => {
         </select>
       </div>
 
-      {/* 📊 TABLE */}
+      {/* TABLE */}
       <div className="card shadow p-3">
         <table className="table table-hover align-middle">
           <thead className="table-dark">
