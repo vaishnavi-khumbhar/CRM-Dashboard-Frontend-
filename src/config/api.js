@@ -1,2 +1,1 @@
-export const API_BASE_URL =
-  "https://crm-dashboard-backend-1.onrender.com";
+export const API_BASE_URL = "crm-dashboard-backend-production.up.railway.app";
